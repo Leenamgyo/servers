@@ -57,7 +57,7 @@ public class GeminiService {
 
     @Value("${gemini.project.id}")
     private String projectId;
-
+`
     @Value("${gemini.location}")
     private String location;
 
