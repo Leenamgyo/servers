@@ -1,5 +1,5 @@
 Role: Senior DevOps & Backend Developer
-Task: Create a production-ready Authentication Server using Java 17+, Spring Boot 3.x, and Docker.
+Task: Create a production-ready Authentication Server using Java 21, Spring Boot 3.3.x, and Docker.
 
 Requirements:
 
@@ -18,16 +18,20 @@ Requirements:
    - **Endpoints**: `/auth/signup`, `/auth/login`, `/auth/reissue` (rotate tokens), `/auth/logout`.
    - **Security**: Stateless session management, BCrypt password encoding.
 
-3. **DevOps & Infrastructure (Crucial)**:
-   - **Dockerfile**: Create a `Dockerfile` for the Spring Boot application. Use a **multi-stage build** approach (Grade wrapper build -> JRE runtime) to minimize image size.
-   - **Docker Compose**: Create a `docker-compose.yml` file that orchestrates:
-     - `mysql-db`: MySQL 8.0 container (include environment variables for root password and database creation).
-     - `redis-cache`: Redis alpine container.
-     - `auth-app`: The Spring Boot application container (depends on mysql and redis).
-   - **Configuration**: Show the `application.yml` settings configured to connect to the docker service names (e.g., use `host: mysql-db` instead of `localhost`).
+3. **DevOps & Infrastructure**:
+   - **Dockerfile**: Create a `Dockerfile` using a **multi-stage build** (Gradle wrapper build -> JRE runtime) to minimize image size.
+   - **Docker Compose**: Orchestrate `mysql-db`, `redis-cache`, and `auth-app`. Use proper `depends_on` and network aliases.
+   - **Configuration**: Ensure `application.yml` uses environment variables or docker service names (e.g., `host: mysql-db`) for connectivity.
 
-4. **Deliverables**:
-   - `build.gradle.kts` dependencies.
+4. **Versioning & Documentation (Mandatory)**:
+   - **CHANGELOG.md**: Create a `CHANGELOG.md` file following the "Keep a Changelog" format.
+   - **Version Control**: If I request a version update (or if this is the initial setup), you MUST:
+     1. Explicitly state the version number in `build.gradle.kts` (e.g., `version = "1.0.0"`).
+     2. Add a new entry in `CHANGELOG.md` under that version with the date and list of changes (Added, Changed, Fixed).
+
+5. **Deliverables**:
+   - `build.gradle.kts` (with explicit version).
+   - `CHANGELOG.md` (Initial release notes).
    - Core Java Code: `SecurityConfig.java`, `JwtProvider.java`, `AuthController.java`, `MemberService.java`.
-   - Infrastructure Code: `Dockerfile`, `docker-compose.yml`.
+   - Infrastructure: `Dockerfile`, `docker-compose.yml`.
    - Configuration: `application.yml`.
