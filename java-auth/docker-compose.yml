@@ -1,18 +1,17 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:14.1-alpine
+  auth-app:
+    build: .
     restart: always
-    environment:
-      - POSTGRES_USER=demouser
-      - POSTGRES_PASSWORD=demopass
-      - POSTGRES_DB=authdb
+    depends_on:
+      - mysql-db
+      - redis-cache
     ports:
-      - '5432:5432'
-    volumes:
-      - db:/var/lib/postgresql/data
+      - "8080:8080"
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecretpassword
 
 volumes:
-  db:
+  mysql-data:
     driver: local

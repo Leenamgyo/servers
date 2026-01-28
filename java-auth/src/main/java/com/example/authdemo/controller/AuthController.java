@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,8 @@ import com.example.authdemo.dto.JwtResponse;
 import com.example.authdemo.dto.LoginRequest;
 import com.example.authdemo.dto.MessageResponse;
 import com.example.authdemo.dto.SignupRequest;
+import com.example.authdemo.dto.TokenRefreshRequest;
+import com.example.authdemo.dto.TokenRefreshResponse;
 import com.example.authdemo.model.ERole;
 import com.example.authdemo.model.Role;
 import com.example.authdemo.model.User;
@@ -34,7 +37,7 @@ import com.example.authdemo.security.services.UserDetailsImpl;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
   @Autowired
   AuthenticationManager authenticationManager;
@@ -51,21 +54,28 @@ public class AuthController {
   @Autowired
   JwtUtils jwtUtils;
 
-  @PostMapping("/signin")
+  @Autowired
+  StringRedisTemplate redisTemplate;
+
+  @PostMapping("/login")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
     Authentication authentication = authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    String jwt = jwtUtils.generateJwtToken(authentication);
-    
     UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();    
+    String jwt = jwtUtils.generateAccessToken(authentication);
+    String refreshToken = jwtUtils.generateRefreshToken(userDetails.getUsername());
+
     List<String> roles = userDetails.getAuthorities().stream()
         .map(item -> item.getAuthority())
         .collect(Collectors.toList());
 
-    return ResponseEntity.ok(new JwtResponse(jwt, 
+    // Store refresh token in Redis
+    redisTemplate.opsForValue().set(userDetails.getUsername(), refreshToken);
+
+    return ResponseEntity.ok(new JwtResponse(jwt, refreshToken,
                          userDetails.getId(), 
                          userDetails.getUsername(), 
                          userDetails.getEmail(), 
@@ -126,4 +136,28 @@ public class AuthController {
 
     return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
   }
+
+  @PostMapping("/reissue")
+    public ResponseEntity<?> reissueToken(@Valid @RequestBody TokenRefreshRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
+
+        String username = jwtUtils.getUserNameFromJwtToken(requestRefreshToken);
+        String redisRefreshToken = redisTemplate.opsForValue().get(username);
+
+        if (redisRefreshToken == null || !redisRefreshToken.equals(requestRefreshToken) || !jwtUtils.validateJwtToken(requestRefreshToken)) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid refresh token!"));
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String newAccessToken = jwtUtils.generateAccessToken(authentication);
+
+        return ResponseEntity.ok(new TokenRefreshResponse(newAccessToken, requestRefreshToken));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        redisTemplate.delete(userDetails.getUsername());
+        return ResponseEntity.ok(new MessageResponse("User logged out successfully!"));
+    }
 }
