@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.example.app"
-version = "1.0.0"
+version = "1.0.2"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -31,6 +31,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
 }
 
 tasks.withType<Test> {

@@ -6,6 +6,9 @@ services:
     restart: always
     env_file:
       - ./.env
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/auth
+      - SPRING_DATA_REDIS_HOST=redis-cache
     depends_on:
       - mysql-db
       - redis-cache
