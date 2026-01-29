@@ -4,14 +4,16 @@ services:
   auth-app:
     build: .
     restart: always
+    env_file:
+      - ./.env
     depends_on:
       - mysql-db
       - redis-cache
     ports:
       - "8080:8080"
-    environment:
-      MYSQL_ROOT_PASSWORD: mysecretpassword
+    networks:
+      - auth-network
 
-volumes:
-  mysql-data:
-    driver: local
+networks:
+  auth-network:
+    external: true
