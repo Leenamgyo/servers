@@ -11,4 +11,14 @@ public class HomeController {
     public RedirectView home() {
         return new RedirectView("/swagger-ui.html");
     }
+
+    @GetMapping("/api/user")
+    public String user() {
+        return "user";
+    }
+
+    @GetMapping("/api/admin")
+    public String admin() {
+        return "admin";
+    }
 }

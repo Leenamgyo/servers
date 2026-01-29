@@ -1,6 +1,7 @@
 package com.example.app.dto;
 
 import com.example.app.domain.Member;
+import com.example.app.domain.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class MemberRequestDto {
         return Member.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
+                .role(Role.ROLE_USER)
                 .build();
     }
 }

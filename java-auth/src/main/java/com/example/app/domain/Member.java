@@ -1,9 +1,6 @@
 package com.example.app.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,9 +19,13 @@ public class Member {
 
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     @Builder
-    public Member(String username, String password) {
+    public Member(String username, String password, Role role) {
         this.username = username;
         this.password = password;
+        this.role = role;
     }
 }
